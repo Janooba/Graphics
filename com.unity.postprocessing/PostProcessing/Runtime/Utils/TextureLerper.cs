@@ -59,7 +59,7 @@ namespace UnityEngine.Rendering.PostProcessing
             }
         }
 
-        RenderTexture Get(RenderTextureFormat format, int w, int h, int d = 1, bool enableRandomWrite = false, bool force3D = false)
+        RenderTexture Get(RenderTextureFormat format, int w, int h, int d = 1, bool enableRandomWrite = false, bool force3D = false, FilterMode filterMode = FilterMode.Bilinear, TextureWrapMode wrapMode = TextureWrapMode.Clamp)
         {
             RenderTexture rt = null;
             int i, len = m_Recycled.Count;
@@ -83,8 +83,8 @@ namespace UnityEngine.Rendering.PostProcessing
                 rt = new RenderTexture(w, h, 0, format)
                 {
                     dimension = dimension,
-                    filterMode = FilterMode.Bilinear,
-                    wrapMode = TextureWrapMode.Clamp,
+                    filterMode = filterMode,
+                    wrapMode = wrapMode,
                     anisoLevel = 0,
                     volumeDepth = d,
                     enableRandomWrite = enableRandomWrite
@@ -124,7 +124,7 @@ namespace UnityEngine.Rendering.PostProcessing
                 int size = Mathf.Max(from.width, from.height);
                 size = Mathf.Max(size, dpth);
 
-                rt = Get(RenderTextureFormat.ARGBHalf, from.width, from.height, dpth, true, true);
+                rt = Get(RenderTextureFormat.ARGBHalf, from.width, from.height, dpth, true, true, filterMode: from.filterMode, wrapMode: from.wrapMode);
 
                 var compute = m_Resources.computeShaders.texture3dLerp;
                 int kernel = compute.FindKernel("KTexture3DLerp");
@@ -151,7 +151,7 @@ namespace UnityEngine.Rendering.PostProcessing
             // it would waste a lot of texture memory as soon as you start using bigger textures
             // (snow ball effect).
             var format = TextureFormatUtilities.GetUncompressedRenderTextureFormat(to);
-            rt = Get(format, to.width, to.height);
+            rt = Get(format, to.width, to.height, filterMode: from.filterMode, wrapMode: from.wrapMode);
 
             var sheet = m_PropertySheets.Get(m_Resources.shaders.texture2dLerp);
             sheet.properties.SetTexture(ShaderIDs.To, to);
@@ -181,7 +181,7 @@ namespace UnityEngine.Rendering.PostProcessing
                 int size = Mathf.Max(from.width, from.height);
                 size = Mathf.Max(size, dpth);
 
-                rt = Get(RenderTextureFormat.ARGBHalf, from.width, from.height, dpth, true, true);
+                rt = Get(RenderTextureFormat.ARGBHalf, from.width, from.height, dpth, true, true, filterMode: from.filterMode, wrapMode: from.wrapMode);
 
                 var compute = m_Resources.computeShaders.texture3dLerp;
                 int kernel = compute.FindKernel("KTexture3DLerpToColor");
@@ -203,7 +203,7 @@ namespace UnityEngine.Rendering.PostProcessing
             // it would waste a lot of texture memory as soon as you start using bigger textures
             // (snow ball effect).
             var format = TextureFormatUtilities.GetUncompressedRenderTextureFormat(from);
-            rt = Get(format, from.width, from.height);
+            rt = Get(format, from.width, from.height, filterMode: from.filterMode, wrapMode: from.wrapMode);
 
             var sheet = m_PropertySheets.Get(m_Resources.shaders.texture2dLerp);
             sheet.properties.SetVector(ShaderIDs.TargetColor, new Vector4(to.r, to.g, to.b, to.a));
